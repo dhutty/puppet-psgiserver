@@ -1,0 +1,94 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides: <%= name %>
+# Required-Start: $network $local_fs $remote_fs $syslog
+# Required-Stop: $network $local_fs $remote_fs $syslog
+# Default-Start: 2 3 4 5
+# Default-Stop:  0 1 6
+# Short-Description: start and stop <%= name %> under <%= appservertype %>
+### END INIT INFO
+
+# Author:       Duncan Hutty
+#
+# chkconfig: - 98 02
+#
+# description: <%= description %>
+# processname: <%= name %>
+# config: /etc/sysconfig/<%= name %>
+
+PATH=/usr/bin:/sbin:/bin:/usr/sbin
+export PATH
+
+[ -f /etc/sysconfig/<%= name %> ] && . /etc/sysconfig/<%= name %>
+lockfile=${LOCKFILE-/var/lock/subsys/<%= name %>}
+pidfile=<%= pidfile %>
+RETVAL=0
+pidopts="-p $pidfile"
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+start() {
+    echo -n $"Starting <%= name %>: "
+<% if appservertype == 'starman' %>
+    daemon starman --listen <%= listen -%> --listen <%= socket %> --user=<%= username %> --daemonize --pid <%= pidfile -%> --error-log <%= logfile -%> --workers <%= workers %> -E <%= env %> --preload-app <%= app_exec -%>
+<% else %>    
+    daemon start_server --port <%= listenport -%> --path <%= socket -%> --pid-file <%= pidfile -%> --signal-on-hup=QUIT -- starman --workers <%= workers -%> --preload-app <%= app_exec -%> --user <%= user -%> --error-log <%= logfile -%> -E <%= env -%>
+<% end %>    
+    RETVAL=$?
+    echo
+        [ $RETVAL = 0 ] && touch ${lockfile}
+        return $RETVAL
+}
+
+stop() {
+    echo -n $"Stopping <%= name %>: "
+    killproc $pidopts <%= appservertype -%>
+    RETVAL=$?
+    echo
+    [ $RETVAL = 0 ] && rm -f ${lockfile} ${pidfile}
+}
+
+reload() {
+    echo -n $"Restarting <%= name %>: "
+    killproc $pidopts <%= appservertype %> -HUP
+    RETVAL=$?
+    echo
+    return $RETVAL
+}
+
+restart() {
+    stop
+    start
+}
+
+rh_status() {
+    status $pidopts <%= appservertype %>
+    RETVAL=$?
+    return $RETVAL
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+
+case "$1" in
+    start)
+        start
+    ;;
+    stop)
+        stop
+    ;;
+    restart)
+        restart
+    ;;
+    status)
+        status <%= name %>
+    ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart}"
+        exit 1
+esac
+
+exit $RETVAL

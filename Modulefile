@@ -1,10 +1,10 @@
-name    'dhutty-psgiserver'
+name    'puppet-psgiserver'
 version '0.0.1'
-source 'http://github.com/dhutty/dhutty-psgiserver'
+source 'http://github.com/dhutty/puppet-psgiserver'
 author 'Duncan Hutty'
 license 'Apache License, Version 2.0'
 summary 'This module manages perl (psgi) application servers'
 description 'This modules manages the deployment of application servers written in perl that use PSGI (http://plackperl.org)'
-project_page 'http://github.com/dhutty/dhutty-psgiserver'
+project_page 'http://github.com/dhutty/puppet-psgiserver'
 
 # dependency 'username/name', '>= 1.2.0'
